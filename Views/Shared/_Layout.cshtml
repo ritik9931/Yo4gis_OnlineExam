@@ -1,0 +1,331 @@
+﻿<!DOCTYPE html>
+<html lang="zxx">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewBag.Title - Dashboard</title>
+    <!-- Google Fonts: Inter or Roboto -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="~/assets/css/custom.css" rel="stylesheet" />
+    <!-- CSS -->
+    <link rel="stylesheet" href="~/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/assets/vendors/css/vendors.min.css" />
+    <link rel="stylesheet" href="~/assets/vendors/css/daterangepicker.min.css" />
+    <link rel="stylesheet" href="~/assets/css/theme.min.css" />
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.13.7/underscore-min.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap.min.css">
+
+    <!-- Toastr -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+
+    @{
+        var username = Session["username"] as string;
+        bool isAdmin = username != null && username.ToLower() == "admin"; // change logic as needed
+    }
+
+    <style>
+         /* ===============================
+        COLORFUL THEME ENHANCEMENTS
+        =============================== */
+
+         .nxl-navigation {
+             background: linear-gradient(180deg, #1d2671, #c33764);
+         }
+
+             .nxl-navigation .nxl-link,
+             .nxl-navigation label {
+                 color: #ffffff !important;
+             }
+
+             .nxl-navigation .nxl-item:hover > .nxl-link,
+             .nxl-navigation .nxl-item.active > .nxl-link {
+                 background: rgba(255, 255, 255, 0.15);
+                 border-radius: 8px;
+             }
+
+         .nxl-submenu {
+             background: rgba(255, 255, 255, 0.08);
+         }
+
+         .nxl-header {
+             background: linear-gradient(90deg, #141e30, #243b55);
+             color: #fff;
+         }
+
+             .nxl-header i {
+                 color: #ffffff;
+             }
+
+         .user-avtar {
+             border: 2px solid #ffb703;
+             box-shadow: 0 0 8px rgba(255, 183, 3, 0.6);
+         }
+
+         .footer {
+             background: linear-gradient(90deg, #0f2027, #203a43, #2c5364);
+             color: #ffffff !important;
+         }
+
+             /* Force all footer text visible */
+             .footer p,
+             .footer span,
+             .footer a {
+                 color: #ffffff !important;
+             }
+
+             /* Remove muted Bootstrap styles inside footer */
+             .footer .text-muted {
+                 color: #ffffff !important;
+             }
+
+             /* Footer links hover */
+             .footer a:hover {
+                 color: #90caf9 !important;
+                 text-decoration: underline;
+             }
+
+
+
+         .nxl-submenu {
+             background: rgba(0, 0, 0, 0.15) !important;
+         }
+
+         .nxl-hasmenu:hover > .nxl-submenu,
+         .nxl-hasmenu.active > .nxl-submenu {
+             background: rgba(0, 0, 0, 0.15) !important;
+         }
+
+         /* Submenu item hover */
+         .nxl-submenu .nxl-item:hover > .nxl-link {
+             background: rgba(255, 255, 255, 0.18) !important;
+             color: #ffffff !important;
+         }
+
+         /* Remove any white box-shadow */
+         .nxl-submenu {
+             box-shadow: none !important;
+         }
+
+         /* ===============================
+        FIX AVATAR DROPDOWN HOVER
+        =============================== */
+
+        .nxl-user-dropdown {
+            display: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+            visibility: visible !important;
+        }
+
+
+            .show > .nxl-user-dropdown,
+            .open > .nxl-user-dropdown,
+            .nxl-user-dropdown.show {
+                display: block !important;
+            }
+
+         .nxl-navigation .nxl-item.active > .nxl-link,
+         .nxl-navigation .nxl-item > .nxl-link:active,
+         .nxl-navigation .nxl-item > .nxl-link:focus {
+             background: linear-gradient(90deg, #2196f3, #1e88e5) !important;
+             color: #ffffff !important;
+         }
+
+         /* Submenu clicked / active */
+         .nxl-submenu .nxl-item.active > .nxl-link,
+         .nxl-submenu .nxl-item > .nxl-link:active,
+         .nxl-submenu .nxl-item > .nxl-link:focus {
+             background: linear-gradient(90deg, #2196f3, #1976d2) !important;
+             color: #ffffff !important;
+         }
+
+         /* Remove default white focus background */
+         .nxl-navigation a:focus,
+         .nxl-navigation a:active {
+             outline: none !important;
+             box-shadow: none !important;
+         }
+
+         /* Sidebar wrapper */
+         .nxl-navigation,
+         .nxl-navigation .navbar-wrapper,
+         .nxl-navigation .navbar-content {
+             background: linear-gradient(180deg, #1d2671, #c33764) !important;
+         }
+
+             /* Collapsed / mini sidebar */
+             .nxl-navigation.mini,
+             .nxl-navigation.mini .navbar-wrapper,
+             .nxl-navigation.mini .navbar-content {
+                 background: linear-gradient(180deg, #1d2671, #c33764) !important;
+             }
+
+                 /* Kill any white panel */
+                 .nxl-navigation *,
+                 .nxl-navigation.mini * {
+                     background-color: transparent;
+                 }
+
+             /* Re-apply menu item backgrounds safely */
+             .nxl-navigation .nxl-link {
+                 background: transparent !important;
+             }
+
+             .nxl-navigation .nxl-item:hover > .nxl-link,
+             .nxl-navigation .nxl-item.active > .nxl-link {
+                 background: rgba(255, 255, 255, 0.15) !important;
+             }
+
+             .nxl-navigation .b-brand {
+                 display: flex;
+                 align-items: center;
+                 height: 60px; /* match navbar height */
+             }
+
+             /* Full logo */
+             .nxl-navigation .logo-lg {
+                 height: 100%;
+                 max-height: 45px; /* adjust if needed */
+                 width: auto;
+                 object-fit: contain;
+             }
+    </style>
+
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="nxl-navigation">
+        <div class="navbar-wrapper">
+            <div class="m-header" style="background-color: #1a293e; border-right:0px;border-bottom:0px">
+                <a href="@Url.Action("Index", "Home")" class="b-brand">
+                    <img src="~/assets/images/logo-full.png" class="logo logo-lg" />
+                    <img src="~/assets/images/logo-abbr.png" class="logo logo-sm" />
+                </a>
+            </div>
+            <div class="navbar-content">
+                <ul class="nxl-navbar">
+                    <li class="nxl-item nxl-caption"><label>Navigation</label></li>
+                    @if (isAdmin)
+                    {
+                        <li class="nxl-item nxl-hasmenu">
+                            <a href="javascript:void(0);" class="nxl-link">
+                                <span class="nxl-micon"><i class="feather-airplay"></i></span>
+                                <span class="nxl-mtext">Admin</span>
+                                <span class="nxl-arrow"><i class="feather-chevron-right"></i></span>
+                            </a>
+                            <ul class="nxl-submenu">
+                                <li class="nxl-item"><a class="nxl-link" href="@Url.Action("Index", "Home")">Dashboard</a></li>
+                                <li class="nxl-item"><a class="nxl-link" href="@Url.Action("Subject", "Home")">Subject</a></li>
+                                <li class="nxl-item"><a class="nxl-link" href="@Url.Action("Questions", "Home")">Questions</a></li>
+                                <li class="nxl-item"><a class="nxl-link" href="@Url.Action("Exams", "Home")">Exam</a></li>
+
+                                <li class="nxl-item"><a class="nxl-link" href="@Url.Action("Analytics", "Home")">Analytics</a></li>
+                                <li class="nxl-item"><a class="nxl-link" href="@Url.Action("ExamStudent", "Home")">Exam Student</a></li>
+                            </ul>
+                        </li>
+                    }
+
+                    <li class="nxl-item nxl-hasmenu">
+                        <a href="javascript:void(0);" class="nxl-link">
+                            <span class="nxl-micon"><i class="feather-airplay"></i></span>
+                            <span class="nxl-mtext">Student</span>
+                            <span class="nxl-arrow"><i class="feather-chevron-right"></i></span>
+                        </a>
+                        <ul class="nxl-submenu">
+                            <li class="nxl-item"><a class="nxl-link" href="@Url.Action("Index", "Student")">Dashboard</a></li>
+                            <li class="nxl-item"><a class="nxl-link" href="@Url.Action("Exam", "Student")">Exam</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <header class="nxl-header">
+        <div class="header-wrapper">
+            <div class="header-left d-flex align-items-center gap-4">
+                <a href="javascript:void(0);" class="nxl-head-mobile-toggler" id="mobile-collapse">
+                    <div class="hamburger hamburger--arrowturn">
+                        <div class="hamburger-box"><div class="hamburger-inner"></div></div>
+                    </div>
+                </a>
+                <div class="nxl-navigation-toggle">
+                    <a href="javascript:void(0);" id="menu-mini-button"><i class="feather-align-left"></i></a>
+                    <a href="javascript:void(0);" id="menu-expend-button" style="display:none"><i class="feather-arrow-right"></i></a>
+                </div>
+            </div>
+
+            <div class="header-right ms-auto">
+                <div class="d-flex align-items-center">
+                    <div class="dropdown nxl-h-item">
+                        <a href="javascript:void(0);" data-toggle="dropdown" class="dropdown-toggle">
+                            <img src="~/assets/images/avatar/1.jpg" class="img-fluid user-avtar me-0" />
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end nxl-h-dropdown nxl-user-dropdown">
+                            <div class="dropdown-header">
+                                <div class="d-flex align-items-center">
+                                    <img src="~/assets/images/avatar/1.jpg" class="img-fluid user-avtar" />
+                                    <div>
+                                        <h6 class="text-dark mb-0">Alexandra Della</h6>
+                                        <span class="fs-12 fw-medium text-muted">alex@example.com</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <a href="@Url.Action("Logout","Account")" class="dropdown-item">
+                                <i class="feather-log-out"></i>
+                                <span>Logout</span>
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="nxl-container">
+        <div class="nxl-content">
+            @RenderBody()
+        </div>
+
+        <footer class="footer text-center">
+            <p class="fs-11 text-muted fw-medium text-uppercase mb-0 copyright">
+                <span>Copyright © @DateTime.Now.Year</span>
+            </p>
+            <p><span>By: <a target="_blank" href="#">Yo4GIS.com</a></span></p>
+        </footer>
+    </main>
+
+    <!-- JS -->
+    <script src="~/assets/vendors/js/vendors.min.js"></script>
+    <script src="~/assets/vendors/js/daterangepicker.min.js"></script>
+    <script src="~/assets/vendors/js/apexcharts.min.js"></script>
+    <script src="~/assets/vendors/js/circle-progress.min.js"></script>
+    <script src="~/assets/js/common-init.min.js"></script>
+    <script src="~/assets/js/dashboard-init.min.js"></script>
+
+    @RenderSection("Scripts", required: false)
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap.min.js"></script>
+
+    <script>
+        $(document).on('click', '.dropdown-menu', function (e) {
+            e.stopPropagation();
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+@{
+    var username = Session["username"] as string;
+}
+
+<h2>Student</h2>
+
+<script>
+    var username = '@username';
+    if (username) {
+        sessionStorage.setItem("username", username);
+    }
+</script>

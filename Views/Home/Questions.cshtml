@@ -1,0 +1,537 @@
+﻿
+@{
+    ViewBag.Title = "Questions";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+@*<link href="assets/extra-libs/DataTables/DataTables-1.10.16/css/dataTables.bootstrap.min.css" rel="stylesheet" />*@
+@*<link href="~/Content/" rel="stylesheet" />*@
+@*<script src="assets/extra-libs/DataTables/DataTables-1.10.16/js/dataTables.bootstrap.js"></script>*@
+<link href="~/Content/extra-libs/DataTables/datatables.css" rel="stylesheet" />
+<script src="~/Content/extra-libs/DataTables/datatables.js"></script>
+<script type="text/javascript"
+        src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js">
+</script>
+
+<script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js">
+</script>
+
+<script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js">
+</script>
+
+<script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js">
+</script>
+
+<script type="text/javascript"
+        src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js">
+</script>
+
+<script type="text/javascript"
+        src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js">
+</script>
+
+
+
+<style>
+     .page-header {
+         background: linear-gradient(135deg, #1e3c72, #2a5298);
+         padding: 18px 24px;
+         border-radius: 12px;
+         color: #ffffff;
+         margin-bottom: 20px;
+     }
+
+         .page-header h5 {
+             color: #ffffff;
+             font-weight: 600;
+         }
+
+         .page-header .breadcrumb {
+             background: transparent;
+             margin-bottom: 0;
+         }
+
+             .page-header .breadcrumb a {
+                 color: #cfe3ff;
+             }
+
+         .page-header .breadcrumb-item.active,
+         .page-header .breadcrumb-item {
+             color: #ffffff;
+         }
+
+     /* =========================================
+    CARD ENHANCEMENT
+    ========================================= */
+
+     .card {
+         border-radius: 16px;
+         border: none;
+         background: #ffffff;
+         transition: all 0.3s ease;
+     }
+
+         .card:hover {
+             box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
+             transform: translateY(-2px);
+         }
+
+         /* Card title */
+         .card h4 {
+             font-weight: 600;
+             color: #1e3c72;
+         }
+
+     /* =========================================
+    FORM CONTROLS
+    ========================================= */
+
+     .form-label {
+         color: #333;
+         margin-bottom: 6px;
+     }
+
+     .form-control,
+     .form-select {
+         border-radius: 10px;
+         padding: 10px 14px;
+         border: 1px solid #dcdcdc;
+         transition: all 0.25s ease;
+     }
+
+         .form-control:focus,
+         .form-select:focus {
+             border-color: #1e88e5;
+             box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.25);
+         }
+
+     /* =========================================
+    UPLOAD BUTTON
+    ========================================= */
+
+     #uploadBtn {
+         background: linear-gradient(90deg, #2196f3, #1e88e5);
+         border: none;
+         padding: 10px 22px;
+         font-weight: 600;
+         border-radius: 10px;
+         letter-spacing: 0.4px;
+         transition: all 0.3s ease;
+     }
+
+         #uploadBtn:hover {
+             transform: translateY(-2px);
+             box-shadow: 0 10px 25px rgba(33, 150, 243, 0.45);
+         }
+
+    #showBtn {
+        background: linear-gradient(90deg, #1976d2, #0d47a1);
+        border: none;
+        padding: 10px 22px;
+        font-weight: 600;
+        border-radius: 10px;
+        letter-spacing: 0.4px;
+        color: #fff;
+        transition: all 0.3s ease;
+    }
+
+        #showBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(25, 118, 210, 0.45);
+        }
+    /* =========================================
+    DATATABLE STYLING
+    ========================================= */
+    .table {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+         .table thead th {
+             background: linear-gradient(135deg, #e3f2fd, #f1f8ff);
+             color: #0d47a1;
+             font-weight: 600;
+             text-align: center;
+             vertical-align: middle;
+         }
+
+         .table tbody td {
+             vertical-align: middle;
+             font-size: 13px;
+         }
+
+     .table-striped tbody tr:nth-of-type(odd) {
+         background-color: #fafafa;
+     }
+
+     .table-bordered > :not(caption) > * {
+         border-color: #e0e0e0;
+     }
+
+     /* Hover row effect */
+     .table tbody tr:hover {
+         background-color: #e3f2fd;
+         transition: background 0.2s ease;
+     }
+
+     /* =========================================
+    DATATABLE CONTROLS (SEARCH, PAGINATION)
+    ========================================= */
+
+     .dataTables_filter input {
+         border-radius: 8px;
+         border: 1px solid #ccc;
+         padding: 6px 10px;
+     }
+
+     .dataTables_paginate .paginate_button {
+         border-radius: 6px !important;
+         padding: 6px 12px !important;
+         margin: 0 2px;
+     }
+
+         .dataTables_paginate .paginate_button.current {
+             background: linear-gradient(90deg, #2196f3, #1e88e5) !important;
+             color: #ffffff !important;
+             border: none !important;
+         }
+
+         .dataTables_paginate .paginate_button:hover {
+             background: #e3f2fd !important;
+         }
+
+     .main-content {
+         padding: 0 !important;
+     }
+
+         /* Remove Bootstrap row gutters */
+         .main-content .row {
+             margin-left: 0 !important;
+             margin-right: 0 !important;
+         }
+
+         /* Remove column padding */
+         .main-content .col-md-12 {
+             padding-left: 0 !important;
+             padding-right: 0 !important;
+         }
+
+         /* Make card full-width & flush */
+         .main-content .card {
+             margin: 0 !important;
+             border-radius: 0 !important;
+             box-shadow: none !important;
+         }
+
+             /* Optional: keep inner padding clean */
+             .main-content .card.p-4 {
+                 padding: 20px !important; /* inner spacing only */
+             }
+</style>
+
+
+<div class="page-header" style="border-radius: 0px;">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">Analytics</h5>
+        </div>
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="@Url.Action("Index","Home")">Admin</a></li>
+            <li class="breadcrumb-item">Questions</li>
+        </ul>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card p-4 shadow-sm">
+                <h4 class="mb-4">Upload Questions</h4>
+
+                <form id="questionUploadForm" enctype="multipart/form-data">
+                    <div class="row g-3">
+
+                        <!-- Exam Dropdown -->
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Select Subject</label>
+                            <select id="ddlExam" class="form-select">
+                            </select>
+                        </div>
+
+                        <!-- Subject Textbox -->
+                        <div style="display:none" class="col-md-4">
+                            <label class="form-label fw-semibold">Subject</label>
+                            <input type="text" id="txtSubject" class="form-control" placeholder="Auto-filled" readonly />
+                        </div>
+
+                        <!-- Excel Upload -->
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Upload Excel File</label>
+                            <input type="file" id="fileExcel" class="form-control" accept=".xlsx,.xls" />
+                            <small class="text-muted">Upload questions in Excel format</small>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="col-12 d-flex gap-2 mt-3">
+                            <button type="button" id="showBtn" class="btn btn-primary">
+                                <i class="feather-upload me-2"></i>Show Questions
+                            </button>
+                            <button type="button" id="uploadBtn" class="btn btn-primary">
+                                <i class="feather-upload me-2"></i>Upload Questions
+                            </button>
+                            <a href="@Url.Action("DownloadQuestionTemplate","Home")"
+                               class="btn btn-success">
+                                Download Excel Template
+                            </a>
+                        </div>
+                        <h5 class="mb-3">Subject wise Questions Count</h5>
+                        <div class="table-responsive">
+                            <table id="tblSubjectQuestion" class="ritik table table-bordered table-striped align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        @*<th>#</th>*@
+                                        <th>Subject</th>
+                                        <th>No Of Questions</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <hr />
+
+                        <div class="table-responsive">
+                            <table id="tblQuestions" class="ritik table table-bordered table-striped align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Subject</th>
+                                        <th>Question</th>
+                                        <th>Option A</th>
+                                        <th>Option B</th>
+                                        <th>Option C</th>
+                                        <th>Option D</th>
+                                        <th>Correct Answer</th>
+                                        <th>Explanation</th>
+                                        <th>Marks</th>
+                                        <th>Difficulty</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var questionTable;
+    var dataForServer = null;
+
+    $("#uploadBtn").on("click", function () {
+
+        sendToServer(dataForServer);
+    });
+    $("#showBtn").on("click", function () {
+        let selectedText = $("#ddlExam option:selected").text();
+        const file = document.getElementById("fileExcel").files[0];
+        if (!file) {
+            alert("Please select an Excel file");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const data = e.target.result;
+            const workbook = XLSX.read(data, { type: "binary" });
+
+            // Read first sheet
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+
+            // Convert sheet to JSON
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+                defval: "" // keep empty cells
+            });
+
+            dataForServer = {
+                "subject_name": selectedText,
+                "questions": jsonData
+            };
+
+            console.log(dataForServer);
+            questionTable.clear().rows.add(jsonData).draw();
+
+            //questionTable.clear().rows.add(jsonData).draw();
+
+            
+        };
+
+        reader.readAsBinaryString(file);
+    });
+
+    function sendToServer(dataToSend) {
+        $.ajax({
+    url: "@Url.Action("InsertQuestions", "Home")",   // Controller action
+    type: 'POST',
+    data: JSON.stringify(dataToSend),
+    contentType: 'application/json; charset=utf-8',
+    success: function (res) {
+        if (res.success) {
+            toastr.success("Questions saved successfully!", "Success");
+           
+        } else {
+            toastr.error(res.message, "Success");
+            //alert(res.message);
+        }
+    },
+    error: function (err) {
+        console.error(err);
+        alert("Error while sending data to server.");
+    }
+});
+    }
+
+
+</script>
+<script>
+    var questionTable;
+    var subjectQuestionTable;
+    //$(document).ready(function () {
+    //    questionTable = $('#tblQuestions').DataTable({
+    //        columns: [
+    //            { data: "id" },
+    //            { data: "subject" },
+    //            { data: "question_text" },
+    //            { data: "option_a" },
+    //            { data: "option_b" },
+    //            { data: "option_c" },
+    //            { data: "option_d" },
+    //            { data: "correct_option" },
+    //            { data: "explanation" },
+    //            { data: "marks" },
+    //            { data: "difficulty" }
+
+    //        ]
+    //    });
+
+    //});
+
+    $(document).ready(function () {
+        GetAllExamAndSubject();
+        $('#btnSubmit').on('click', function () {
+            let examName = $('#txtExamName').val();
+            let examSubject = $('#ddlSubject').val();
+            var dataObj = { "sub_name": from, "sub_code": to };
+            saveSubject(dataObj);
+            //alert('From: ' + from + '\nTo: ' + to);
+        });
+
+        $('#ddlExam').on('change', function () {
+            let selectedValue = $(this).val();
+            let selectedText = $("#ddlExam option:selected").text();
+            //GetQuestionsBySubject(selectedText);
+            console.log("Selected Value:", selectedValue);
+            console.log("Selected Text:", selectedText);
+            var result = _.findWhere(examData, { exam_title: selectedText });
+
+            var subjectTitle = result ? result.subject_title : null;
+            $("#txtSubject").val(subjectTitle);
+            console.log(subjectTitle); // ASP.NET
+        });
+
+            questionTable = $('#tblQuestions').DataTable({
+            columns: [
+                { data: "id" },
+                { data: "subject" },
+                { data: "question_text" },
+                { data: "option_a" },
+                { data: "option_b" },
+                { data: "option_c" },
+                { data: "option_d" },
+                { data: "correct_option" },
+                { data: "explanation" },
+                { data: "marks" },
+                { data: "difficulty" }
+
+            ]
+            });
+
+        subjectQuestionTable = $('#tblSubjectQuestion').DataTable({
+            columns: [
+                //{ data: "id" },
+                { data: "subject" },
+                { data: "no_questions" }
+
+
+            ]
+        });
+
+        GetAllSubjectQuestionCount();
+    });
+
+    var examData = null;
+    function loadExams(subjects) {
+        examData = _.map(subjects, function (innerArray) {
+            var obj = {};
+            _.each(innerArray, function (item) {
+                obj[item.Key] = item.Value;
+            });
+            return obj;
+        });
+
+        let ddl = $('#ddlExam');
+        ddl.empty();
+        ddl.append(`<option value="ALL">Select Subject</option>`);
+        $.each(examData, function (i, item) {
+            ddl.append(`<option value="${item.subject_id}">${item.subject_title}</option>`);
+        });
+
+        ddl.val("ALL"); // Set default
+    }
+
+    function GetAllSubjectQuestionCount() {
+         $.ajax({
+            url: "@Url.Action("GetSubjectQuestionsCount", "Home")",
+            crossDomain: true,
+            success: function (data) {
+            console.log(data);
+                var resultData = _.map(data.data, function (innerArray) {
+                    var obj = {};
+                    _.each(innerArray, function (item) {
+                        obj[item.Key] = item.Value;
+                    });
+                    return obj;
+                });
+
+                subjectQuestionTable.clear().rows.add(resultData).draw();
+            }
+            });
+    }
+
+
+
+    function GetAllExamAndSubject() {
+        $.ajax({
+            url: "@Url.Action("GetAllExamAndSubjectAndBatch", "Home")",
+            crossDomain: true,
+            success: function (data) {
+                console.log(data);
+                loadExams(data.data.subjectData);
+            }
+        });
+    }
+
+</script>
+
