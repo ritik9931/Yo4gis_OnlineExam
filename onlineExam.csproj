@@ -1204,6 +1204,7 @@
     <Content Include="Views\Home\Exams.cshtml" />
     <Content Include="Views\Home\ExamStudent.cshtml" />
     <Content Include="Views\Home\CreateUser.cshtml" />
+    <Content Include="Views\Student\ExamTestFree.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

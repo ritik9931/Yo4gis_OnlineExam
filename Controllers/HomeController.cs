@@ -27,11 +27,15 @@ namespace onlineExam.Controllers
 
             return View();
         }
+        
+
+        
 
         public ActionResult CreateUser()
         {
             return View();
         }
+        [SessionAuthorize]
         public ActionResult Analytics()
         {
             return View();
@@ -175,6 +179,7 @@ VALUES
             //string qry = "select et.exam_id,et.subject_id,et.exam_title,st.subject_title from public.exams_tbl et join public.subjects_tbl st on et.subject_id=st.subject_id order by exam_title";
             string qry = @"SELECT 
                             em.exam_id,
+                            em.exam_duration_minutes,
                                 em.exam_title,
                                 sm.subject_title,
                                 COUNT(eq.question_id) AS number_questions
@@ -185,6 +190,7 @@ VALUES
                                 ON eq.exam_id = em.exam_id
                             GROUP BY
                             em.exam_id,
+                            em.exam_duration_minutes, 
                                 em.exam_title,
                                 sm.subject_title
                             ORDER BY em.exam_title; ";
@@ -307,11 +313,12 @@ VALUES
             int cnt = Convert.ToInt32(res[0].count);
             if(cnt==0)
             {
-                qry = "INSERT INTO public.exams_tbl(subject_id, exam_title) values('" + model[0].subject_id + "','" + model[0].exam_name + "') returning exam_id";
+                qry = "INSERT INTO public.exams_tbl(subject_id, exam_title, exam_duration_minutes) values('" + model[0].subject_id + "','" + model[0].exam_name + "', '"+ model[0].exam_duration_minutes +"') returning exam_id";
                 int exam_id = _db.ExecuteScalar<int>(qry, new
                 {
                     SubjectId = model[0].subject_id,
-                    ExamTitle = model[0].exam_name
+                    ExamTitle = model[0].exam_name,
+                    Duration = model[0].exam_duration_minutes
                 });
 
                 //var res1 = _db.Query<dynamic>(qry, CommandType.Text);
@@ -371,11 +378,13 @@ where sm.mobile_number='" + studentId + "'";
                    .ConnectionString;
             string qry = "";
 
-            qry = @"SELECT q.id, q.question_text, q.option_a, q.option_b, q.option_c, q.option_d, q.sub_name, marks, difficulty, category
+            qry = @"SELECT q.id, q.question_text, q.option_a, q.option_b, q.option_c, q.option_d, q.sub_name, marks, difficulty, category, e.exam_duration_minutes
 FROM exam_question eq
 JOIN questions_tbl q 
   ON q.id = eq.question_id
-WHERE eq.exam_id ='" + examID+"' ORDER BY eq.question_id; ";
+JOIN exams_tbl e
+  ON e.exam_id = eq.exam_id
+WHERE eq.exam_id ='" + examID+"' ORDER BY random(); ";
 
 
             var res = _db.Query<dynamic>(qry, CommandType.Text).ToList();
@@ -395,16 +404,78 @@ WHERE eq.exam_id ='" + examID+"' ORDER BY eq.question_id; ";
             return Json(new { success = true, message = "SUCCESS", data = res }, JsonRequestBehavior.AllowGet);
         }
 
+
+        [HttpGet]
+        public JsonResult GetExamResultDetails(int? attemptId)
+        {
+            // If JS did not send attemptId, fetch latest attempt
+            if (attemptId == null)
+            {
+                attemptId = _db.QuerySingleOrDefault<int>(
+                    "SELECT MAX(attempt_id) FROM student_answers"
+                );
+            }
+
+            if (attemptId == null || attemptId == 0)
+            {
+                return Json(new
+                {
+                    status = "error",
+                    message = "No exam attempt found"
+                }, JsonRequestBehavior.AllowGet);
+            }
+
+            string sql = @"
+        SELECT 
+            q.id                AS QuestionId,
+            q.question_text     AS QuestionText,
+            q.option_a          AS OptionA,
+            q.option_b          AS OptionB,
+            q.option_c          AS OptionC,
+            q.option_d          AS OptionD,
+            q.correct_option    AS CorrectOption,
+            sa.selected_option  AS SelectedOption
+        FROM student_answers sa
+        INNER JOIN questions_tbl q 
+            ON q.id = sa.question_id
+        WHERE sa.attempt_id = @attemptId
+        ORDER BY q.id";
+
+            var questions = _db.Query<ExamResultQuestionDto>(
+                sql,
+                new { attemptId }
+            ).ToList();
+
+            return Json(new
+            {
+                status = "success",
+                questions = questions
+            }, JsonRequestBehavior.AllowGet);
+        }
+
+
+       
+
         [HttpPost]
         public JsonResult SubmitAnswers(List<StudentAnswer> answers)
         {
-            string qry = "update exam_student_mapping set status='COMPLETED' where exam_id='" + answers[0].ExamId + "' and student_id='" + answers[0].StudentId + "'";
-            var res = _db.Query<dynamic>(qry, CommandType.Text);
-
+            if (answers == null || answers.Count == 0)
+                return Json(new { status = "error", message = "No answers submitted" });
             
+            int examId = Convert.ToInt32(answers[0].ExamId);
+            int studentId = Convert.ToInt32(answers[0].StudentId);
+
+           
+            string qry = "UPDATE exam_student_mapping SET status='COMPLETED' " + "WHERE exam_id=" + examId + " AND student_id=" + studentId;
+
+            _db.Execute(qry, CommandType.Text);
+
+            int attemptId = _db.QuerySingle<int>("SELECT COALESCE(MAX(attempt_id),0)+1 FROM student_answers");
+
             var QuestionIds = answers.Select(a => a.QuestionId).ToList();
             string questionIdCsv = string.Join(",", QuestionIds);
-            string sql = @"SELECT id, correct_option FROM questions_tbl WHERE id IN (" + questionIdCsv+")";
+
+            string sql ="SELECT id, correct_option FROM questions_tbl WHERE id IN (" + questionIdCsv + ")";
             var correctAnswers = _db.Query(sql, CommandType.Text).ToList();
 
             int totalQuestions = answers.Count;
@@ -412,57 +483,116 @@ WHERE eq.exam_id ='" + examID+"' ORDER BY eq.question_id; ";
 
             foreach (var ans in answers)
             {
+                int marksObtained = 0;
+
                 if (ans.SelectedOption != null)
                 {
-                    var correct = correctAnswers.FirstOrDefault(x => x.id == ans.QuestionId);
+                    var correct = correctAnswers
+                        .FirstOrDefault(x => x.id == ans.QuestionId);
+
                     if (correct != null &&
-                        string.Equals(correct.correct_option, ans.SelectedOption, StringComparison.OrdinalIgnoreCase))
+                        string.Equals(correct.correct_option, ans.SelectedOption,
+                                      StringComparison.OrdinalIgnoreCase))
                     {
                         correctCount++;
+                        marksObtained = 1;
                     }
                 }
+
+                string insertSql = "INSERT INTO student_answers " + "(attempt_id, question_id, selected_option, marks_obtained, answered_at,exam_id,student_id) VALUES (" + attemptId + ", " + ans.QuestionId + ", '" + ans.SelectedOption + "', " + marksObtained + ", NOW(),'"+ examId+"','"+studentId+"')";
+                _db.Execute(insertSql, CommandType.Text);
             }
-            int totalMarks = totalQuestions * 1; // or per-question marks
-            int obtainedMarks = correctCount * 1;
-            bool isPassed = obtainedMarks >= (totalMarks * 0.4); // 40% pass
 
-            // ✅ Update exam_student_mapping
-            string updateSql = @"UPDATE exam_student_mapping SET status = 'Completed',completed_at = now(), score ='"+ correctCount+"',total_marks ='"+ correctCount +"',is_pass='"+isPassed.ToString()+"' WHERE exam_id ='"+ answers[0].ExamId+"' AND student_id = '"+ answers[0].StudentId + "'";
+            int totalMarks = totalQuestions;
+            int obtainedMarks = correctCount;
+            bool isPassed = obtainedMarks >= (totalMarks * 0.4);
 
-            _db.Execute(updateSql, new
-            {
-                score = obtainedMarks,
-                totalMarks = totalMarks,
-                isPassed = isPassed,
-                examId = answers[0].ExamId,
-                studentId = answers[0].StudentId
-            });
+            
+            string updateSql = "UPDATE exam_student_mapping SET " + "status='Completed', completed_at=NOW(), " + "score=" + obtainedMarks + ", " + "total_marks=" + totalMarks + ", " + "is_pass=" + (isPassed ? "true" : "false") + " " + "WHERE exam_id=" + examId + " AND student_id=" + studentId;
 
+            _db.Execute(updateSql, CommandType.Text);
 
-
-            //var questions = _db.Questions
-            //    .Where(q => answers.Select(a => a.QuestionId).Contains(q.Id))
-            //    .ToList();
-
-            //int score = 0;
-
-            //foreach (var ans in answers)
-            //{
-            //    var q = questions.FirstOrDefault(x => x.Id == ans.QuestionId);
-            //    if (q != null && q.CorrectOption == ans.SelectedOption)
-            //        score++;
-            //}
             return Json(new
             {
                 status = "success",
-                totalQuestions=totalQuestions,
-                correctCount=correctCount,
-                obtainedMarks=obtainedMarks,
-                totalMarks=totalMarks,
-                isPassed=isPassed
+                totalQuestions,
+                correctCount,
+                obtainedMarks,
+                totalMarks,
+                isPassed
             });
-            //return Json(new { success = true, score = "", total = "" });
         }
+
+
+
+        //[HttpPost]
+        //public JsonResult SubmitAnswers(List<StudentAnswer> answers)
+        //{
+        //    string qry = "update exam_student_mapping set status='COMPLETED' where exam_id='" + answers[0].ExamId + "' and student_id='" + answers[0].StudentId + "'";
+        //    var res = _db.Query<dynamic>(qry, CommandType.Text);
+
+
+        //    var QuestionIds = answers.Select(a => a.QuestionId).ToList();
+        //    string questionIdCsv = string.Join(",", QuestionIds);
+        //    string sql = @"SELECT id, correct_option FROM questions_tbl WHERE id IN (" + questionIdCsv+")";
+        //    var correctAnswers = _db.Query(sql, CommandType.Text).ToList();
+
+        //    int totalQuestions = answers.Count;
+        //    int correctCount = 0;
+
+        //    foreach (var ans in answers)
+        //    {
+        //        if (ans.SelectedOption != null)
+        //        {
+        //            var correct = correctAnswers.FirstOrDefault(x => x.id == ans.QuestionId);
+        //            if (correct != null &&
+        //                string.Equals(correct.correct_option, ans.SelectedOption, StringComparison.OrdinalIgnoreCase))
+        //            {
+        //                correctCount++;
+        //            }
+        //        }
+        //    }
+        //    int totalMarks = totalQuestions * 1; // or per-question marks
+        //    int obtainedMarks = correctCount * 1;
+        //    bool isPassed = obtainedMarks >= (totalMarks * 0.4); // 40% pass
+
+        //    // ✅ Update exam_student_mapping
+        //    string updateSql = @"UPDATE exam_student_mapping SET status = 'Completed',completed_at = now(), score ='"+ correctCount+"',total_marks ='"+ correctCount +"',is_pass='"+isPassed.ToString()+"' WHERE exam_id ='"+ answers[0].ExamId+"' AND student_id = '"+ answers[0].StudentId + "'";
+
+        //    _db.Execute(updateSql, new
+        //    {
+        //        score = obtainedMarks,
+        //        totalMarks = totalMarks,
+        //        isPassed = isPassed,
+        //        examId = answers[0].ExamId,
+        //        studentId = answers[0].StudentId
+        //    });
+
+
+
+        //    //var questions = _db.Questions
+        //    //    .Where(q => answers.Select(a => a.QuestionId).Contains(q.Id))
+        //    //    .ToList();
+
+        //    //int score = 0;
+
+        //    //foreach (var ans in answers)
+        //    //{
+        //    //    var q = questions.FirstOrDefault(x => x.Id == ans.QuestionId);
+        //    //    if (q != null && q.CorrectOption == ans.SelectedOption)
+        //    //        score++;
+        //    //}
+        //    return Json(new
+        //    {
+        //        status = "success",
+        //        totalQuestions=totalQuestions,
+        //        correctCount=correctCount,
+        //        obtainedMarks=obtainedMarks,
+        //        totalMarks=totalMarks,
+        //        isPassed=isPassed
+        //    });
+        //    //return Json(new { success = true, score = "", total = "" });
+        //}
 
         public ActionResult DownloadQuestionTemplate()
         {
@@ -622,7 +752,110 @@ FROM public.exam_student_mapping";
             }
         }
 
+
+
+
+
+        [HttpPost]
+        public JsonResult DeleteExamStudent(int examId, int studentId)
+        {
+            try
+            {
+                // 1️⃣ Delete all answers for all attempts of this student+exam
+                string delAnswers =
+                    "DELETE FROM student_answers WHERE exam_id='" + examId + "' and student_id='" + studentId + "';";
+
+                 _db.Execute(delAnswers, CommandType.Text);
+
+                // 2️⃣ Delete all attempts
+                string delMapping =
+                    "DELETE FROM exam_student_mapping " +
+                    "WHERE exam_id=" + examId + " AND student_id=" + studentId;
+
+                _db.Execute(delMapping, CommandType.Text);
+
+                return Json(new
+                {
+                    success = true,
+                    message = "All attempts deleted successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+
+        
+             [HttpGet]
+        public ActionResult GetStudentDashboardData(string studentid)
+        {
+            Dictionary<string, dynamic> result = new Dictionary<string, dynamic>();
+            string connStr = ConfigurationManager
+                   .ConnectionStrings["PostgresConn"]
+                   .ConnectionString;
+            string qry = "";
+
+            string checkQuery = @"select count(*) from public.exam_student_mapping where student_id='"+ studentid+"'";
+            int cntStudent = _db.ExecuteScalar<int>(checkQuery);
+            result.Add("cntAssignedExam", cntStudent);
+
+            checkQuery = @"select count(*) from public.exam_student_mapping where student_id='" + studentid + "' and status='Completed'";
+            int cntExam = _db.ExecuteScalar<int>(checkQuery);
+            result.Add("cntCompletedExam", cntExam);
+
+            //checkQuery = @"SELECT COUNT(1) FROM public.questions_tbl";
+            int cntQuestions = Convert.ToInt32(cntStudent)- Convert.ToInt32(cntExam);
+            result.Add("cntRemainingExam", cntQuestions);
+
+            checkQuery = @"SELECT 
+    ROUND(
+        (COUNT(*) FILTER (WHERE is_pass = 'true') * 100.0) / COUNT(*), 
+        2
+    ) AS pass_percentage
+FROM public.exam_student_mapping where student_id='" + studentid + "'";
+
+            double passPercentage = _db.ExecuteScalar<double>(checkQuery);
+            result.Add("passPercentage", passPercentage);
+
+            checkQuery = @"SELECT 
+    COUNT(*) FILTER (WHERE is_pass = 'true') AS pass_count,
+    COUNT(*) FILTER (WHERE is_pass = 'false') AS fail_count
+FROM public.exam_student_mapping where student_id='" + studentid + "'";
+            var res = _db.Query<dynamic>(checkQuery, CommandType.Text).ToList();
+            result.Add("passFailCount", res);
+
+
+            //qry = @"select sub_name as subject,count(*) as no_questions from public.questions_tbl group by sub_name;";
+
+
+            //var res = _db.Query<dynamic>(qry, CommandType.Text).ToList();
+
+            return Json(new { success = true, message = "SUCCESS", data = result }, JsonRequestBehavior.AllowGet);
+        }
+
+
     }
+
+    public class ExamResultQuestionDto
+    {
+        public int QuestionId { get; set; }
+        public string QuestionText { get; set; }
+
+        public string OptionA { get; set; }
+        public string OptionB { get; set; }
+        public string OptionC { get; set; }
+        public string OptionD { get; set; }
+
+        public string CorrectOption { get; set; }
+        public string SelectedOption { get; set; }
+    }
+
 
 
 }

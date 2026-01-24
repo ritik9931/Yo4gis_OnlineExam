@@ -1,18 +1,18 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "D:\\exam\\onlineExam_21012026\\onlineExam\\",
+  "WorkspaceRootPath": "D:\\exam\\Ritik_OnlineExam\\Ritik_OnlineExam\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{7E92373E-8027-40E6-B610-298FA925D3A5}|onlineExam.csproj|d:\\exam\\onlineexam_21012026\\onlineexam\\views\\home\\exams.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{7E92373E-8027-40E6-B610-298FA925D3A5}|onlineExam.csproj|solutionrelative:views\\home\\exams.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7E92373E-8027-40E6-B610-298FA925D3A5}|onlineExam.csproj|D:\\exam\\onlineExam_21012026\\onlineExam\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{7E92373E-8027-40E6-B610-298FA925D3A5}|onlineExam.csproj|d:\\exam\\ritik_onlineexam\\ritik_onlineexam\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{7E92373E-8027-40E6-B610-298FA925D3A5}|onlineExam.csproj|solutionrelative:controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7E92373E-8027-40E6-B610-298FA925D3A5}|onlineExam.csproj|D:\\exam\\onlineExam_21012026\\onlineExam\\views\\home\\subject.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{7E92373E-8027-40E6-B610-298FA925D3A5}|onlineExam.csproj|solutionrelative:views\\home\\subject.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{7E92373E-8027-40E6-B610-298FA925D3A5}|onlineExam.csproj|d:\\exam\\ritik_onlineexam\\ritik_onlineexam\\views\\home\\exams.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{7E92373E-8027-40E6-B610-298FA925D3A5}|onlineExam.csproj|solutionrelative:views\\home\\exams.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7E92373E-8027-40E6-B610-298FA925D3A5}|onlineExam.csproj|d:\\exam\\ritik_onlineexam\\ritik_onlineexam\\views\\student\\exam.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{7E92373E-8027-40E6-B610-298FA925D3A5}|onlineExam.csproj|solutionrelative:views\\student\\exam.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
   "DocumentGroupContainers": [
@@ -22,45 +22,50 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 3,
           "Children": [
             {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Exams.cshtml",
-              "DocumentMoniker": "D:\\exam\\onlineExam_21012026\\onlineExam\\Views\\Home\\Exams.cshtml",
-              "RelativeDocumentMoniker": "Views\\Home\\Exams.cshtml",
-              "ToolTip": "D:\\exam\\onlineExam_21012026\\onlineExam\\Views\\Home\\Exams.cshtml",
-              "RelativeToolTip": "Views\\Home\\Exams.cshtml",
-              "ViewState": "AgIAAMIBAAAAAAAAAAAnwF4BAABJAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-01-21T10:55:27.376Z",
-              "EditorCaption": ""
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "HomeController.cs",
-              "DocumentMoniker": "D:\\exam\\onlineExam_21012026\\onlineExam\\Controllers\\HomeController.cs",
-              "RelativeDocumentMoniker": "Controllers\\HomeController.cs",
-              "ToolTip": "D:\\exam\\onlineExam_21012026\\onlineExam\\Controllers\\HomeController.cs",
-              "RelativeToolTip": "Controllers\\HomeController.cs",
-              "ViewState": "AgIAAE8CAAAAAAAAAAAmwFwCAAAQAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-21T07:35:49.806Z",
+              "Title": "Exams.cshtml",
+              "DocumentMoniker": "D:\\exam\\Ritik_OnlineExam\\Ritik_OnlineExam\\Views\\Home\\Exams.cshtml",
+              "RelativeDocumentMoniker": "Views\\Home\\Exams.cshtml",
+              "ToolTip": "D:\\exam\\Ritik_OnlineExam\\Ritik_OnlineExam\\Views\\Home\\Exams.cshtml",
+              "RelativeToolTip": "Views\\Home\\Exams.cshtml",
+              "ViewState": "AgIAAPkBAAAAAAAAAAAEwP0BAAA7AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-01-24T06:34:49.928Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "Subject.cshtml",
-              "DocumentMoniker": "D:\\exam\\onlineExam_21012026\\onlineExam\\Views\\Home\\Subject.cshtml",
-              "RelativeDocumentMoniker": "Views\\Home\\Subject.cshtml",
-              "ToolTip": "D:\\exam\\onlineExam_21012026\\onlineExam\\Views\\Home\\Subject.cshtml",
-              "RelativeToolTip": "Views\\Home\\Subject.cshtml",
-              "ViewState": "AgIAANEBAAAAAAAAAAAYwNABAAADAAAAAAAAAA==",
+              "Title": "Exam.cshtml",
+              "DocumentMoniker": "D:\\exam\\Ritik_OnlineExam\\Ritik_OnlineExam\\Views\\Student\\Exam.cshtml",
+              "RelativeDocumentMoniker": "Views\\Student\\Exam.cshtml",
+              "ToolTip": "D:\\exam\\Ritik_OnlineExam\\Ritik_OnlineExam\\Views\\Student\\Exam.cshtml",
+              "RelativeToolTip": "Views\\Student\\Exam.cshtml",
+              "ViewState": "AgIAACoDAAAAAAAAAAAEwD8DAAA1AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-01-21T07:26:07.329Z"
+              "WhenOpened": "2026-01-24T06:16:48.457Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "HomeController.cs",
+              "DocumentMoniker": "D:\\exam\\Ritik_OnlineExam\\Ritik_OnlineExam\\Controllers\\HomeController.cs",
+              "RelativeDocumentMoniker": "Controllers\\HomeController.cs",
+              "ToolTip": "D:\\exam\\Ritik_OnlineExam\\Ritik_OnlineExam\\Controllers\\HomeController.cs",
+              "RelativeToolTip": "Controllers\\HomeController.cs",
+              "ViewState": "AgIAAK0AAAAAAAAAAAAowMAAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-21T07:35:49.806Z",
+              "EditorCaption": ""
             }
           ]
         }

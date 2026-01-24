@@ -50,6 +50,7 @@ namespace onlineExam.Models
         //public string exam_name { get; set; }
         public string question_id { get; set; }
         public string subject_id { get; set; }
+        public int exam_duration_minutes { get; set; }
     }
 
     public class ExamStudent
@@ -84,5 +85,36 @@ namespace onlineExam.Models
         public string ExamId { get; set; }
         public string StudentId { get; set; }
     }
+
+    public class ApiResponse
+    {
+        public string message { get; set; }
+        public int status { get; set; }
+        public StudentData Data { get; set; }
+    }
+
+    public class StudentData
+    {
+        public int ID { get; set; }
+        public string name { get; set; }
+        public string mobile_number { get; set; }
+        public string email { get; set; }
+        public string address { get; set; }
+        public bool is_enrolled { get; set; }
+        public string type_user { get; set; }
+        public bool is_active { get; set; }
+        public string password { get; set; }
+        public string dob { get; set; }
+    }
+
+    public class ExamRequest
+    {
+        public string exam_id { get; set; }
+        //public string exam_name { get; set; }
+        public string student_id { get; set; }
+        public string subject_id { get; set; }
+        public string question_cnt { get; set; }
+    }
+
 
 }

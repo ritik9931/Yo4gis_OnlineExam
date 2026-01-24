@@ -342,6 +342,7 @@
     $("#uploadBtn").on("click", function () {
 
         sendToServer(dataForServer);
+        GetAllSubjectQuestionCount();
     });
     $("#showBtn").on("click", function () {
         let selectedText = $("#ddlExam option:selected").text();
@@ -390,7 +391,8 @@
     success: function (res) {
         if (res.success) {
             toastr.success("Questions saved successfully!", "Success");
-           
+            GetAllSubjectQuestionCount();
+
         } else {
             toastr.error(res.message, "Success");
             //alert(res.message);
@@ -450,16 +452,40 @@
             $("#txtSubject").val(subjectTitle);
             console.log(subjectTitle); // ASP.NET
         });
-
+        $.fn.dataTable.ext.errMode = 'none';
             questionTable = $('#tblQuestions').DataTable({
             columns: [
                 { data: "id" },
                 { data: "subject" },
-                { data: "question_text" },
-                { data: "option_a" },
-                { data: "option_b" },
-                { data: "option_c" },
-                { data: "option_d" },
+                    { data: "question_text" },
+                    {
+                        data: 'option_a',
+                        render: function (data) {
+                            return $('<div/>').text(data).html(); // safely show <html>, <body>
+                        }
+                    },
+                    {
+                        data: 'option_b',
+                        render: function (data) {
+                            return $('<div/>').text(data).html(); // safely show <html>, <body>
+                        }
+                    },
+                    {
+                        data: 'option_c',
+                        render: function (data) {
+                            return $('<div/>').text(data).html(); // safely show <html>, <body>
+                        }
+                    },
+                    {
+                        data: 'option_d',
+                        render: function (data) {
+                            return $('<div/>').text(data).html(); // safely show <html>, <body>
+                        }
+                    },
+                //{ data: "option_a" },
+                //{ data: "option_b" },
+                //{ data: "option_c" },
+                //{ data: "option_d" },
                 { data: "correct_option" },
                 { data: "explanation" },
                 { data: "marks" },
@@ -467,7 +493,7 @@
 
             ]
             });
-
+        
         subjectQuestionTable = $('#tblSubjectQuestion').DataTable({
             columns: [
                 //{ data: "id" },

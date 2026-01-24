@@ -211,23 +211,54 @@
             <div class="card p-4">
                 <h4>Exam Master</h4>
 
+                @*<div class="row mt-3">
+            <div class="col-md-4">
+                <label>Exam Name</label>
+                <input type="text" id="txtExamName" class="form-control" placeholder="Enter keyword">
+            </div>
+
+            <div class="col-md-4">
+                <label>Select Subject</label>
+                <select id="ddlSubject" class="form-control">
+                    <option value="ALL">Select All</option>
+                </select>
+            </div>
+
+            <div class="col-md-4 d-flex align-items-end">
+                <button id="btnSubmit" class="btn btn-primary w-100">Submit</button>
+            </div>
+        </div>*@
+
                 <div class="row mt-3">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label>Exam Name</label>
-                        <input type="text" id="txtExamName" class="form-control" placeholder="Enter keyword">
+                        <input type="text" id="txtExamName" class="form-control">
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label>Select Subject</label>
                         <select id="ddlSubject" class="form-control">
                             <option value="ALL">Select All</option>
                         </select>
                     </div>
 
-                    <div class="col-md-4 d-flex align-items-end">
+                    <div class="col-md-3">
+                        <label>Exam Duration</label>
+                        <div class="d-flex gap-2">
+                            <select id="examHour" class="form-control">
+                                <option value="0">Hours</option>
+                            </select>
+                            <select id="examMinute" class="form-control">
+                                <option value="0">Minutes</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 d-flex align-items-end">
                         <button id="btnSubmit" class="btn btn-primary w-100">Submit</button>
                     </div>
                 </div>
+
 
                 <hr>
                 <h5 class="mb-3">Exam Details</h5>
@@ -239,6 +270,7 @@
                                 <th>Exam Name</th>
                                 <th>Subject Name</th>
                                 <th>Number Of Questions</th>
+                                <th> Duration</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -263,8 +295,8 @@
                                 <th>Subject</th>
                                 <th>Hardness</th>
                                 @*<th>
-                                    <input type="checkbox" id="selectAll" />
-                                 </th>*@
+                           <input type="checkbox" id="selectAll" />
+                        </th>*@
                                 @*<th>Action</th>*@
                             </tr>
                         </thead>
@@ -281,6 +313,13 @@
     var questionTable = null;
      $(document).ready(function () {
          GetAllExamAndSubject();
+         for (let h = 0; h <= 5; h++) {
+             $('#examHour').append(`<option value="${h}">${h} Hr</option>`);
+         }
+
+         for (let m = 0; m < 60; m += 5) {
+             $('#examMinute').append(`<option value="${m}">${m} Min</option>`);
+         }
         $('#btnSubmit').on('click', function () {
             let examName = $('#txtExamName').val();
             let examSubject = $('#ddlSubject').val();
@@ -288,8 +327,15 @@
             if (examName.trim() === "") {
                 toastr.error("All Fields need to fill", "Success");
             }
+            let hours = parseInt($('#examHour').val());
+            let minutes = parseInt($('#examMinute').val());
+            let totalMinutes = (hours * 60) + minutes;
+
+            if (examName.trim() === "" || totalMinutes === 0) {
+                toastr.error("All Fields need to fill", "Error");
+            }
             else {
-                saveExamAndQuestions(examName, examSubject);
+                saveExamAndQuestions(examName, examSubject, totalMinutes);
             }
             //alert('From: ' + from + '\nTo: ' + to);
         });
@@ -312,6 +358,7 @@
                  { data: "exam_title" },
                  { data: "subject_title" },
                  { data: "number_questions" },
+                 { data: "exam_duration_minutes" },
                  {
                      data: null,
                      title: "Action",
@@ -376,13 +423,14 @@
 
      });
 
-    function saveExamAndQuestions(examName, examSubject) {
+    function saveExamAndQuestions(examName, examSubject, examDurationMinutes) {
         var objArray = [];
         $('.row-check:checked').each(function () {
             var obj = {};
             obj.exam_name = examName;
             obj.subject_id = examSubject;
             obj.question_id = $(this).val();
+            obj.exam_duration_minutes = examDurationMinutes;
             //alert($(this).val());
             objArray.push(obj);
             //selectedIds.push($(this).val());

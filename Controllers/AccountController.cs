@@ -12,6 +12,9 @@ using System.Net.Http;
 using System.Text;
 using System.Net;
 using System.IO;
+using System.Threading.Tasks;
+using System.Net.Http.Headers;
+using Newtonsoft.Json;
 
 namespace onlineExam.Controllers
 {
@@ -30,9 +33,42 @@ namespace onlineExam.Controllers
         {
             return View();
         }
+        [HttpPost]
+        public async Task<ActionResult> Login(string username, string password)
+        {
+            string pass = Convert.ToString(System.Configuration.ConfigurationManager.AppSettings["admin"]);
+            if (username == "admin" && password == pass)
+            {
+                Session["Username"] = username;
+                return RedirectToAction("Index", "Home");
+            }
+            else
+            {
+                string tokenJwt = "";
+                bool isValid = CheckUser(username, password, out tokenJwt);
+                if (isValid)
+                {
+                    Session["Username"] = username;
+                    string result = await GetStudentProfileAsync(tokenJwt, username);
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse>(result);
+
+                    var student = apiResponse.Data;
+                    Session["studentId"] =Convert.ToString(student.ID);
+                    //return Json(new { success = true, message = "Login successful" });
+                    return RedirectToAction("Index", "Student");
+                }
+                else
+                {
+                    return RedirectToAction("Login", "Account");
+                    //return Json(new { success = false, message = "Invalid username or password" });
+                }
+            }
+        }
+
+
 
         [HttpPost]
-        public ActionResult Login(string username, string password)
+        public ActionResult Login1(string username, string password)
         {
             string pass =Convert.ToString(System.Configuration.ConfigurationManager.AppSettings["admin"]);
             if (username == "admin" && password == pass)
@@ -42,10 +78,12 @@ namespace onlineExam.Controllers
             }
             else
             {
-                bool isValid = CheckUser(username, password);
+                string tokenJwt = "";
+                bool isValid = CheckUser(username, password,out tokenJwt);
                 if (isValid)
                 {
                     Session["Username"] = username;
+                    string result = GetStudentProfileAsync(tokenJwt, username).GetAwaiter().GetResult();
                     //return Json(new { success = true, message = "Login successful" });
                     return RedirectToAction("Index", "Student");
                 }
@@ -82,9 +120,26 @@ namespace onlineExam.Controllers
             //return View();
         }
 
-        public Boolean CheckUser(string username,string password)
+        public async Task<string> GetStudentProfileAsync(string token, string username)
         {
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("bearer", token);
 
+                string url = $"http://yo4vts.in/bcscapi/api/bcsc/GetStudentProfileById?username={username}";
+
+                HttpResponseMessage response = await client.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+
+                return await response.Content.ReadAsStringAsync();
+            }
+        }
+
+
+        public Boolean CheckUser(string username,string password,out string token)
+        {
+            token = string.Empty;
             var client = new HttpClient();
             var url = "https://yo4vts.in/bcscapi/token";
             string postData = $"username={HttpUtility.UrlEncode(username)}&password={HttpUtility.UrlEncode(password)}&grant_type=password";
@@ -111,6 +166,7 @@ namespace onlineExam.Controllers
 
                     if (json["access_token"] != null)
                     {
+                        token = Convert.ToString(json["access_token"]);
                         return true;
                         //Session["User"] = json["username"];
                         //Session["token"] = json["access_token"];

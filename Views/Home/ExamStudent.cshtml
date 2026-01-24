@@ -271,7 +271,7 @@
     var studentExamTable = null;
     $(document).ready(function () {
         GetAllExamAndSubject();
-       
+
         $('#btnSubmit').on('click', function () {
 
             let examName = $("#ddlExam option:selected").text();
@@ -281,7 +281,7 @@
 
 
 
-            $('.row-check:checked').each(function () {
+            studentTable.$('.row-check:checked').each(function () {
                 var obj = {};
                 obj.exam_id = exam_id;
                 obj.student_id = $(this).val();
@@ -368,12 +368,9 @@
                     render: function (data, type, row) {
                         return `
             <div style="display:flex; gap:6px; justify-content:center;">
-                <button class="btn btn-sm btn-primary btn-edit" data-id="${row.id}">
-                    Edit
-                </button>
-                <button class="btn btn-sm btn-danger btn-delete" data-id="${row.id}">
-                    Delete
-                </button>
+                 <button class="btn btn-sm btn-danger btn-delete" data-exam-id="${row.exam_id}" data-student-id="${row.student_id}">
+                     Delete
+                 </button>
             </div>
         `;
                     }
@@ -381,7 +378,7 @@
             ]
         });
 
-        
+
 
 
         $('#selectAll').on('change', function () {
@@ -407,7 +404,7 @@
                     return obj;
                 });
                 studentExamTable.clear().rows.add(resultData).draw();
-            
+
             }
             });
     }
@@ -493,6 +490,53 @@
 
             }
             });
-            }
+    }
+
+    //deleteExam
+
+  $('#tblExistingExamStudent').on('click', '.btn-delete', function () {
+    var examId = $(this).data('exam-id');
+    var studentId = $(this).data('student-id');
+
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'This will delete ALL attempts of this student for this exam.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#d33'
+    }).then((result) => {
+
+        console.log(result); 
+
+        if (result.value === true) {
+
+            $.ajax({
+                url: "@Url.Action("DeleteExamStudent", "Home")",
+                type: "POST",
+                data: {
+                    examId: examId,
+                    studentId: studentId
+                },
+                success: function (res) {
+                    if (res.success) {
+                        Swal.fire('Deleted!', 'All attempts have been deleted.', 'success');
+                        loadExistingDate();
+                    } else {
+                        Swal.fire('Error!', res.message, 'error');
+                    }
+                },
+                error: function () {
+                    Swal.fire('Error!', 'Server error occurred.', 'error');
+                }
+            });
+
+        }
+    });
+});
+
+
+
 </script>
 

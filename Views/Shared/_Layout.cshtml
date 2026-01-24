@@ -31,6 +31,35 @@
     }
 
     <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nxl-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .nxl-content {
+            flex: 1;
+        }
+
+        .footer {
+            margin-top: auto;
+        }
+
+
+    </style>
+
+    <style>
          /* ===============================
         COLORFUL THEME ENHANCEMENTS
         =============================== */
@@ -227,7 +256,7 @@
                                 <li class="nxl-item"><a class="nxl-link" href="@Url.Action("Questions", "Home")">Questions</a></li>
                                 <li class="nxl-item"><a class="nxl-link" href="@Url.Action("Exams", "Home")">Exam</a></li>
 
-                                <li class="nxl-item"><a class="nxl-link" href="@Url.Action("Analytics", "Home")">Analytics</a></li>
+                                <li class="nxl-item"><a class="nxl-link" href="@Url.Action("Analytics", "Home")">Request Exams</a></li>
                                 <li class="nxl-item"><a class="nxl-link" href="@Url.Action("ExamStudent", "Home")">Exam Student</a></li>
                             </ul>
                         </li>
@@ -241,7 +270,8 @@
                         </a>
                         <ul class="nxl-submenu">
                             <li class="nxl-item"><a class="nxl-link" href="@Url.Action("Index", "Student")">Dashboard</a></li>
-                            <li class="nxl-item"><a class="nxl-link" href="@Url.Action("Exam", "Student")">Exam</a></li>
+                            <li class="nxl-item"><a class="nxl-link" href="@Url.Action("Exam", "Student")">Assigned Exam</a></li>
+                            <li class="nxl-item"><a class="nxl-link" href="@Url.Action("ExamTestFree", "Student")">Request Exam</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -275,7 +305,7 @@
                                 <div class="d-flex align-items-center">
                                     <img src="~/assets/images/avatar/1.jpg" class="img-fluid user-avtar" />
                                     <div>
-                                        <h6 class="text-dark mb-0">Alexandra Della</h6>
+                                        <h6 id="idUser" class="text-dark mb-0">Alexandra Della</h6>
                                         <span class="fs-12 fw-medium text-muted">alex@example.com</span>
                                     </div>
                                 </div>
@@ -325,6 +355,10 @@
         $(document).on('click', '.dropdown-menu', function (e) {
             e.stopPropagation();
         });
+
+        var uName = sessionStorage.getItem("username");
+        console.log(uName);
+        $("#idUser").text(uName);
 
     </script>
 </body>

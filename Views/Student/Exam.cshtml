@@ -388,17 +388,53 @@
     .diff-hard + .diff-text {
         color: #c62828 !important;
     }
+</style>
+<style>
+    .modal-open .app,
+    .modal-open .app-content,
+    .modal-open .page-content,
+    .modal-open .content-wrapper,
+    .modal-open .main-panel,
+    .modal-open .dashboard-content,
+    .modal-open .layout-content {
+        filter: none !important;
+        -webkit-filter: none !important;
+        transform: none !important;
+    }
+
+    /* ===== REMOVE BLUR FROM MODAL BACKDROP ===== */
+
+    .modal-backdrop {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        filter: none !important;
+        background-color: rgba(0, 0, 0, 0.5) !important;
+    }
+
+    /* ===== OVERRIDE THEME MODAL BLUR ===== */
+    body.modal-open .nxl-header,
+    body.modal-open .nxl-navigation,
+    body.modal-open .page-header,
+    body.modal-open .nxl-container {
+        filter: none !important;
+    }
+    body.modal-open .no-blur-modal ~ .nxl-header,
+    body.modal-open .no-blur-modal ~ .nxl-navigation,
+    body.modal-open .no-blur-modal ~ .page-header,
+    body.modal-open .no-blur-modal ~ .nxl-container {
+        filter: none !important;
+    }
 
 </style>
 
 <div class="page-header" style="border-radius: 0px;">
     <div class="page-header-left d-flex align-items-center">
         <div class="page-header-title">
-            <h5 class="m-b-10">Analytics</h5>
+            <h5 class="m-b-10">Assigned Exams</h5>
         </div>
         <ul class="breadcrumb">
             <li class="breadcrumb-item"><a href="@Url.Action("Index","Home")">Student</a></li>
-            <li class="breadcrumb-item">Exams</li>
+            <li class="breadcrumb-item">Assigned Exams</li>
         </ul>
     </div>
 </div>
@@ -472,6 +508,23 @@
     ⏳ Time Left: <span id="timer">30:00</span>
 </div>
 
+
+<!-- Result Details Modal -->
+<div class="modal fade no-blur-modal" id="resultModal" tabindex="-1">
+
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Exam Result Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="resultModalBody">
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <script>
     var studentTable = null;
     var exam_id = null;
@@ -523,7 +576,10 @@
                  data: JSON.stringify(answers),
     contentType: 'application/json; charset=utf-8',
     success: function (res) {
-        if (res.status=="success") {
+        if (res.status == "success") {
+
+            window.currentAttemptId = res.attemptId;
+
             toastr.success("Exam Submit Successfully", "Success");
             $(".quiz-container").hide();
             clearInterval(interval);
@@ -543,7 +599,12 @@
             GetAllAssignedExam();
             // 🟢 Show result
             $("#resultSection").fadeIn();
-
+            $("#viewResultBtn").remove();
+            $("#resultSection").append(`
+              <button id="viewResultBtn" class="btn btn-info mt-3">
+              Review Questions
+              </button>
+            `);
         } else {
             toastr.error(res.message, "Error");
         }
@@ -617,10 +678,78 @@
                         100);
                  }
             });
-        
-        
+
+
         });
     });
+
+    //view
+
+    function renderResultQuestions(questions) {
+        let html = "";
+
+        $.each(questions, function (i, q) {
+
+            html += `
+        <div class="border rounded p-3 mb-3">
+            <h6>${i + 1}. ${escapeHtml(q.QuestionText)}</h6>
+
+            ${renderOption("A", q.OptionA, q)}
+            ${renderOption("B", q.OptionB, q)}
+            ${renderOption("C", q.OptionC, q)}
+            ${renderOption("D", q.OptionD, q)}
+
+            <div class="mt-2 fw-bold text-success">
+               Correct Answer: ${q.CorrectOption}
+            </div>
+        </div>`;
+        });
+
+        $("#resultModalBody").html(html);
+    }
+
+    function renderOption(opt, text, q) {
+        let css = "";
+
+        if (q.SelectedOption === opt && q.CorrectOption === opt) {
+            css = "bg-success text-white";
+        }
+        else if (q.SelectedOption === opt && q.CorrectOption !== opt) {
+            css = "bg-danger text-white";
+        }
+        else if (q.CorrectOption === opt) {
+            css = "border border-success";
+        }
+
+        let checked = q.SelectedOption === opt ? "checked" : "";
+
+        return `
+        <div class="form-check p-2 mb-1 ${css}">
+            <input class="form-check-input" type="checkbox" disabled ${checked}>
+            <label class="form-check-label">
+                ${opt}. ${escapeHtml(text)}
+            </label>
+        </div>`;
+    }
+
+
+
+    $(document).on("click", "#viewResultBtn", function () {
+        loadResultDetails(window.currentAttemptId);
+    });
+    function loadResultDetails(attemptId) {
+    $.ajax({
+        url: "@Url.Action("GetExamResultDetails", "Home")?attemptId=" + attemptId,
+        type: "GET",
+        success: function (res) {
+            if (res.status === "success") {
+                renderResultQuestions(res.questions);
+                $("#resultModal").modal("show");
+            }
+        }
+    });
+}
+
 
     function GetExamQuestionForQuiz(examId) {
         $.ajax({
@@ -698,7 +827,9 @@
                         }, 600);
                     }
                 }, 50);
-                startTimer(2 * 60); // 30 minutes
+                //startTimer(2 * 60); // 30 minutes
+                examDurationMinutes = resultData[0].exam_duration_minutes;
+                startTimer(examDurationMinutes * 60);
             }
         });
     }

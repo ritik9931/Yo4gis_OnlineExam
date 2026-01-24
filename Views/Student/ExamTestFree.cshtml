@@ -1,0 +1,959 @@
+﻿
+@{
+    ViewBag.Title = "ExamTestFree";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    .result-card {
+        max-width: 500px;
+        margin: 40px auto;
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 25px 30px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        border-top: 6px solid #4f46e5;
+    }
+
+    .result-title {
+        text-align: center;
+        font-weight: 800;
+        color: #1f2937;
+        margin-bottom: 20px;
+    }
+
+    .result-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 12px;
+    }
+
+        .result-table th {
+            text-align: left;
+            font-weight: 700;
+            color: #374151;
+            width: 55%;
+        }
+
+        .result-table td {
+            text-align: right;
+            font-weight: 800;
+            font-size: 18px;
+            color: #111827;
+        }
+
+        .result-table tr {
+            background: #f9fafb;
+            border-radius: 10px;
+        }
+
+            .result-table tr th,
+            .result-table tr td {
+                padding: 12px 14px;
+            }
+
+            .result-table tr th {
+                border-top-left-radius: 10px;
+                border-bottom-left-radius: 10px;
+            }
+
+            .result-table tr td {
+                border-top-right-radius: 10px;
+                border-bottom-right-radius: 10px;
+            }
+
+    .result-status {
+        font-size: 20px;
+        font-weight: 900;
+    }
+
+        .result-status.pass {
+            color: #16a34a;
+        }
+
+        .result-status.fail {
+            color: #dc2626;
+        }
+</style>
+<style>
+
+    /* Sticky Timer */
+    .timer-box {
+        position: fixed;
+        top: 75px;
+        right: 15px;
+        background: #212529;
+        color: #fff;
+        padding: 10px 16px;
+        border-radius: 30px;
+        font-size: 15px;
+        font-weight: 600;
+        z-index: 9999;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    }
+
+
+    /* Quiz Container */
+    .quiz-container {
+        max-width: 900px;
+        margin: auto;
+    }
+
+    /* Question Card */
+    .question-card {
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 25px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        border-left: 5px solid #0d6efd;
+    }
+
+        .question-card h5 {
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+    /* Options */
+    .option-item {
+        display: block;
+        background: #f8f9fa;
+        border: 2px solid transparent;
+        border-radius: 6px;
+        padding: 12px 15px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+    }
+
+        .option-item:hover {
+            background: #e7f1ff;
+            border-color: #0d6efd;
+        }
+
+        .option-item input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .option-item.selected {
+            background: #e7f1ff;
+            border-color: #0d6efd;
+            font-weight: 600;
+        }
+
+    /* Submit Button */
+    .submit-btn {
+        background: linear-gradient(45deg, #0d6efd, #6610f2);
+        color: white;
+        padding: 12px 30px;
+        font-size: 16px;
+        border-radius: 30px;
+        border: none;
+        transition: 0.3s;
+    }
+
+        .submit-btn:hover {
+            background: linear-gradient(45deg, #6610f2, #0d6efd);
+            transform: translateY(-1px);
+        }
+
+    .page-header {
+        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        padding: 18px 24px;
+        border-radius: 12px;
+        color: #ffffff;
+        margin-bottom: 20px;
+    }
+
+        .page-header h5 {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .page-header .breadcrumb {
+            background: transparent;
+            margin-bottom: 0;
+        }
+
+            .page-header .breadcrumb a {
+                color: #cfe3ff;
+            }
+
+        .page-header .breadcrumb-item.active,
+        .page-header .breadcrumb-item {
+            color: #ffffff;
+        }
+
+    /* =========================================
+    CARD ENHANCEMENT
+    ========================================= */
+
+    .card {
+        border-radius: 16px;
+        border: none;
+        background: #ffffff;
+        transition: all 0.3s ease;
+    }
+
+        .card:hover {
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+        }
+
+        /* Card title */
+        .card h4 {
+            font-weight: 600;
+            color: #1e3c72;
+        }
+
+    /* =========================================
+    FORM CONTROLS
+    ========================================= */
+
+    .form-label {
+        color: #333;
+        margin-bottom: 6px;
+    }
+
+    .form-control,
+    .form-select {
+        border-radius: 10px;
+        padding: 10px 14px;
+        border: 1px solid #dcdcdc;
+        transition: all 0.25s ease;
+    }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #1e88e5;
+            box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.25);
+        }
+
+    /* =========================================
+    DATATABLE STYLING
+    ========================================= */
+
+    .table {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+        .table thead th {
+            background: linear-gradient(135deg, #e3f2fd, #f1f8ff);
+            color: #0d47a1;
+            font-weight: 600;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .table tbody td {
+            vertical-align: middle;
+            font-size: 13px;
+        }
+
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: #fafafa;
+    }
+
+    .table-bordered > :not(caption) > * {
+        border-color: #e0e0e0;
+    }
+
+    /* Hover row effect */
+    .table tbody tr:hover {
+        background-color: #e3f2fd;
+        transition: background 0.2s ease;
+    }
+
+    /* =========================================
+    DATATABLE CONTROLS (SEARCH, PAGINATION)
+    ========================================= */
+
+    .dataTables_filter input {
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        padding: 6px 10px;
+    }
+
+    .dataTables_paginate .paginate_button {
+        border-radius: 6px !important;
+        padding: 6px 12px !important;
+        margin: 0 2px;
+    }
+
+        .dataTables_paginate .paginate_button.current {
+            background: linear-gradient(90deg, #2196f3, #1e88e5) !important;
+            color: #ffffff !important;
+            border: none !important;
+        }
+
+        .dataTables_paginate .paginate_button:hover {
+            background: #e3f2fd !important;
+        }
+
+    .main-content {
+        padding: 0 !important;
+    }
+
+        /* Remove Bootstrap row gutters */
+        .main-content .row {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+
+        /* Remove column padding */
+        .main-content .col-md-12 {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+
+        /* Make card full-width & flush */
+        .main-content .card {
+            margin: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+        }
+
+            /* Optional: keep inner padding clean */
+            .main-content .card.p-4 {
+                padding: 20px !important;
+            }
+
+    /* Question card base */
+    .question-card {
+        border-radius: 10px;
+        padding: 16px 18px;
+        margin-bottom: 18px;
+        background: #ffffff;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+        position: relative;
+    }
+
+    .diff-icon {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        display: inline-block;
+        vertical-align: middle;
+        margin-left: 6px;
+        margin-right: 6px;
+        position: relative;
+    }
+
+    /* Difficulty colors (icon only) */
+    .diff-easy {
+        background: #2e7d32 !important; /* Green */
+    }
+
+    .diff-medium {
+        background: #1565c0 !important; /* Blue */
+    }
+
+    .diff-hard {
+        background: #c62828 !important; /* Red */
+    }
+
+    /* Optional hover tooltip */
+    /*.diff-icon[data-title]:hover::after {*/
+    .diff-icon[title]:hover::after {
+        content: attr(title);
+        position: absolute;
+        background: #263238;
+        color: #fff;
+        font-size: 11px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        top: -28px;
+        left: 0;
+        white-space: nowrap;
+    }
+
+    .diff-text {
+        font-size: 12px;
+        font-weight: 600;
+        margin-right: 10px;
+        vertical-align: middle;
+    }
+
+    .diff-easy + .diff-text {
+        color: #2e7d32 !important;
+    }
+
+    .diff-medium + .diff-text {
+        color: #1565c0 !important;
+    }
+
+    .diff-hard + .diff-text {
+        color: #c62828 !important;
+    }
+</style>
+<style>
+    .modal-open .app,
+    .modal-open .app-content,
+    .modal-open .page-content,
+    .modal-open .content-wrapper,
+    .modal-open .main-panel,
+    .modal-open .dashboard-content,
+    .modal-open .layout-content {
+        filter: none !important;
+        -webkit-filter: none !important;
+        transform: none !important;
+    }
+
+    /* ===== REMOVE BLUR FROM MODAL BACKDROP ===== */
+
+    .modal-backdrop {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        filter: none !important;
+        background-color: rgba(0, 0, 0, 0.5) !important;
+    }
+
+    /* ===== OVERRIDE THEME MODAL BLUR ===== */
+    body.modal-open .nxl-header,
+    body.modal-open .nxl-navigation,
+    body.modal-open .page-header,
+    body.modal-open .nxl-container {
+        filter: none !important;
+    }
+
+    body.modal-open .no-blur-modal ~ .nxl-header,
+    body.modal-open .no-blur-modal ~ .nxl-navigation,
+    body.modal-open .no-blur-modal ~ .page-header,
+    body.modal-open .no-blur-modal ~ .nxl-container {
+        filter: none !important;
+    }
+</style>
+
+<div class="page-header" style="border-radius: 0px;">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">Request Exam</h5>
+        </div>
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="@Url.Action("Index","Home")">Student</a></li>
+            <li class="breadcrumb-item">Request Exam</li>
+        </ul>
+    </div>
+</div>
+
+<div class="main-content">
+    <!-- Request Section -->
+    <div class="card p-4 mb-4">
+        <h4 class="mb-3">🎯 Request an Exam</h4>
+
+        <div class="row">
+            <div class="col-md-4">
+                <label class="fw-bold">Select Subject</label>
+                <select id="ddlSubject" class="form-select">
+                    <option value="">-- Select Subject --</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="fw-bold">Select Exam</label>
+                <select id="ddlExam" class="form-select" disabled>
+                    <option value="">-- Select Exam --</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="fw-bold">Total Questions</label>
+                <input type="text" id="txtQuestionCount" class="form-control" readonly />
+            </div>
+        </div>
+
+        <div class="mt-4 text-end">
+            <button id="btnRequestExam" class="btn btn-primary" disabled>
+                📩 Raise Request
+            </button>
+        </div>
+    </div>
+
+    <!-- Requests List -->
+    <div class="card p-4">
+        <h4 class="mb-3">📄 My Exam Requests</h4>
+        <div class="table-responsive">
+            <table id="tblQuestions" class="ritik table table-bordered table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Subject</th>
+                        <th>Exam</th>
+                        <th>Questions</th>
+                        <th>Status</th>
+                        <th>Requested On</th>                       
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    var studentTable = null;
+    var exam_id = null;
+    var student_id = null;
+    var examDataBySubject = null;
+    $(document).ready(function () {
+        GetAllSubjectForExam();
+        GetAllRequest();
+        $('#ddlSubject').change(function () {
+            const subjectId = $(this).val();
+            $('#ddlExam').prop('disabled', true).html('<option>Loading...</option>');
+            $('#txtQuestionCount').val('');
+            $('#btnRequestExam').prop('disabled', true);
+
+            if (!subjectId) return;
+
+            $.ajax({
+                url: "@Url.Action("GetExamDetailsBySubject", "Student")?subjectId=" + subjectId,
+            crossDomain: true,
+            success: function (data) {
+                console.log(data);
+                examDataBySubject = _.map(data.data, function (innerArray) {
+                    var obj = {};
+                    _.each(innerArray, function (item) {
+                        obj[item.Key] = item.Value;
+
+                    });
+                    return obj;
+                });
+
+                let options = '<option value="">-- Select Exam --</option>';
+                examDataBySubject.forEach(sub => {
+                    options += `<option value="${sub.exam_id}">${sub.exam_title}</option>`;
+                });
+                $('#ddlExam').html(options).prop('disabled', false);
+                console.log(examDataBySubject);
+
+
+                //studentTable.clear().rows.add(resultData).draw();
+            }
+            });
+
+
+
+        });
+
+        $('#ddlExam').change(function () {
+            const examId = $(this).val();
+
+            $('#btnRequestExam').prop('disabled', true);
+
+            if (!examId) return;
+            var result = _.findWhere(examDataBySubject, { exam_id: Number(examId) });
+            console.log(result);
+            $('#txtQuestionCount').val(result.number_questions);
+            $('#btnRequestExam').prop('disabled', false);
+
+        });
+
+        $('#btnRequestExam').click(function () {
+            const examId = $('#ddlExam').val();
+            const subjectId = $('#ddlSubject').val();
+            var cntQuestion = $('#txtQuestionCount').val();
+            if (!examId && !subjectId) return;
+
+
+            var dataObj = { "question_cnt": cntQuestion, "exam_id": examId, "subject_id": subjectId, "student_id": studentId };
+
+
+            $.ajax({
+    url: "@Url.Action("RaiseExamRequest", "Student")",   // Controller action
+    type: 'POST',
+                data: JSON.stringify(dataObj),
+    contentType: 'application/json; charset=utf-8',
+    success: function (res) {
+        if (res.success) {
+            toastr.success("Request Added successfully!", "Success");
+            //alert("Questions saved successfully!");
+            GetAllRequest();
+        } else {
+            toastr.error(res.message, "Success");
+        }
+    },
+    error: function (err) {
+        console.error(err);
+        alert("Error while sending data to server.");
+    }
+});
+        });
+
+
+
+        $('#btnSubmit').on('click', function () {
+            let from = $('#subName').val();
+            let to = $('#subCode').val();
+            var dataObj = { "sub_name": from, "sub_code": to };
+            saveSubject(dataObj);
+            //alert('From: ' + from + '\nTo: ' + to);
+        });
+
+        $("#quizForm").on("submit", function (e) {
+            clearInterval(interval);
+            $("#idTimer").hide();
+            e.preventDefault();
+            let answers = [];
+
+            $('.question-card').each(function () {
+                let questionId = $(this).data('question-id');
+                let selected = $(this).find('input[type=radio]:checked').val() == undefined ? null : $(this).find('input[type=radio]:checked').val();
+
+                //if (selected) {
+                    answers.push({
+                        QuestionId: questionId,
+                        SelectedOption: selected,
+                        ExamId: exam_id,
+                        StudentId: student_id
+                    });
+                //}
+            });
+
+            //$.ajax({
+            //    url: '/Quiz/SubmitAnswers',
+            //    type: 'POST',
+            //    data: formData,
+            //    success: function (res) {
+            //        if (res.success) {
+            //            alert("Exam submitted!\nScore: " + res.score + " / " + res.total);
+            //            location.reload(); // or redirect
+            //        }
+            //    }
+            //});
+             $.ajax({
+    url: "@Url.Action("SubmitAnswers", "Home")",   // Controller action
+    type: 'POST',
+                 data: JSON.stringify(answers),
+    contentType: 'application/json; charset=utf-8',
+    success: function (res) {
+        if (res.status == "success") {
+
+            window.currentAttemptId = res.attemptId;
+
+            toastr.success("Exam Submit Successfully", "Success");
+            $(".quiz-container").hide();
+            clearInterval(interval);
+            //$("#timer").text("00:00").hide();
+            $("#resStatus").show();
+            //$("#resStatus")
+            //    .text(res.isPassed ? "Pass" : "Fail")
+            //    .removeClass("pass fail")
+            //    .addClass(res.isPassed ? "pass" : "fail");
+
+            // 🟢 Fill result table
+            $("#resTotalQuestions").text(res.totalQuestions);
+            $("#resCorrectCount").text(res.correctCount);
+            $("#resObtainedMarks").text(res.obtainedMarks);
+            $("#resTotalMarks").text(res.totalMarks);
+            $("#resStatus").text(res.isPassed ? "Pass ✅" : "Fail ❌");
+            GetAllAssignedExam();
+            // 🟢 Show result
+            $("#resultSection").fadeIn();
+            $("#viewResultBtn").remove();
+            $("#resultSection").append(`
+              <button id="viewResultBtn" class="btn btn-info mt-3">
+              View Result
+              </button>
+            `);
+        } else {
+            toastr.error(res.message, "Error");
+        }
+    },
+    error: function (err) {
+        console.error(err);
+        alert("Error while sending data to server.");
+    }
+});
+        });
+
+
+        studentTable = $('#tblQuestions').DataTable({
+            paging: false,
+            searching: false,
+            ordering: false,
+            lengthChange: false,
+            columns: [
+                { data: "subject_title" },
+                { data: "exam_title" },
+                { data: "question_cnt" },
+                { data: "status" },
+                { data: "requested_at" }
+
+            ]
+        });
+
+
+       
+    });
+
+    //view
+
+    function renderResultQuestions(questions) {
+        let html = "";
+
+        $.each(questions, function (i, q) {
+
+            html += `
+        <div class="border rounded p-3 mb-3">
+            <h6>${i + 1}. ${escapeHtml(q.QuestionText)}</h6>
+
+            ${renderOption("A", q.OptionA, q)}
+            ${renderOption("B", q.OptionB, q)}
+            ${renderOption("C", q.OptionC, q)}
+            ${renderOption("D", q.OptionD, q)}
+
+            <div class="mt-2 fw-bold text-success">
+               Correct Answer: ${q.CorrectOption}
+            </div>
+        </div>`;
+        });
+
+        $("#resultModalBody").html(html);
+    }
+
+    function renderOption(opt, text, q) {
+        let css = "";
+
+        if (q.SelectedOption === opt && q.CorrectOption === opt) {
+            css = "bg-success text-white";
+        }
+        else if (q.SelectedOption === opt && q.CorrectOption !== opt) {
+            css = "bg-danger text-white";
+        }
+        else if (q.CorrectOption === opt) {
+            css = "border border-success";
+        }
+
+        let checked = q.SelectedOption === opt ? "checked" : "";
+
+        return `
+        <div class="form-check p-2 mb-1 ${css}">
+            <input class="form-check-input" type="checkbox" disabled ${checked}>
+            <label class="form-check-label">
+                ${opt}. ${escapeHtml(text)}
+            </label>
+        </div>`;
+    }
+
+
+
+    $(document).on("click", "#viewResultBtn", function () {
+        loadResultDetails(window.currentAttemptId);
+    });
+    function loadResultDetails(attemptId) {
+    $.ajax({
+        url: "@Url.Action("GetExamResultDetails", "Home")?attemptId=" + attemptId,
+        type: "GET",
+        success: function (res) {
+            if (res.status === "success") {
+                renderResultQuestions(res.questions);
+                $("#resultModal").modal("show");
+            }
+        }
+    });
+}
+
+
+    function GetExamQuestionForQuiz(examId) {
+        $.ajax({
+            url: "@Url.Action("GetExamQuestionForQuiz", "Home")?examID=" + examId + "&student_id=" + student_id,
+            crossDomain: true,
+            success: function (data) {
+                console.log(data);
+                var resultData = _.map(data.data, function (innerArray) {
+                    var obj = {};
+                    _.each(innerArray, function (item) {
+                        obj[item.Key] = item.Value;
+                    });
+                    return obj;
+                });
+                console.log(resultData);
+                $("#resultSection").hide();
+                $(".quiz-container").show();
+                $("#idTimer").show();
+                $("#idDivSubmit").show();
+
+                let html = "";
+
+                $.each(resultData, function (i, q) {
+
+                    let difficulty = (q.difficulty || "").toLowerCase();
+                    let diffClass = "";
+                    let diffTitle = "";
+
+                    if (difficulty === "easy") {
+                        diffClass = "diff-easy";
+                        diffTitle = "Easy";
+                    }
+                    else if (difficulty === "medium") {
+                        diffClass = "diff-medium";
+                        diffTitle = "Medium";
+                    }
+                    else if (difficulty === "hard") {
+                        diffClass = "diff-hard";
+                        diffTitle = "Hard";
+                    }
+
+                    let diffIconHtml = diffClass
+                        ? `<span class="diff-icon ${diffClass}" title="${diffTitle}"></span>
+                        <span class="diff-text">${diffTitle}</span>`
+                        : ``;
+                    html += `
+        <div class="question-card" data-question-id="${q.id}">
+            <h5>${i + 1}. ${escapeHtml(q.question_text)} ${diffIconHtml}</h5>
+            <input type="hidden" name="answers[${i}].QuestionId" value="${q.id}" />
+
+            <label class="option-item">
+                <input type="radio" name="answers[${i}].SelectedOption" value="A" />
+                ${escapeHtml(q.option_a)}
+            </label>
+            <label class="option-item">
+                <input type="radio" name="answers[${i}].SelectedOption" value="B" />
+                ${escapeHtml(q.option_b)}
+            </label>
+            <label class="option-item">
+                <input type="radio" name="answers[${i}].SelectedOption" value="C" />
+                ${escapeHtml(q.option_c)}
+            </label>
+            <label class="option-item">
+                <input type="radio" name="answers[${i}].SelectedOption" value="D" />
+                ${escapeHtml(q.option_d)}
+            </label>
+        </div>`;
+                });
+                $("#questionsArea").html(html);
+                setTimeout(function () {
+                    const firstQuestion = $(".question-card").first();
+                    if (firstQuestion.length) {
+                        $("html, body").animate({
+                            scrollTop: firstQuestion.offset().top - 80
+                        }, 600);
+                    }
+                }, 50);
+                startTimer(2 * 60); // 30 minutes
+            }
+        });
+    }
+
+    function escapeHtml(text) {
+        return $('<div>').text(text).html();
+    }
+
+    var interval = null;
+    var isExamRunning = false;
+    function startTimer(duration) {
+        let timeLeft = duration;
+        const timerEl = document.getElementById("timer");
+
+        isExamRunning = true;
+        $('.btn-edit').prop('disabled', true).addClass('disabled-btn');
+
+        interval = setInterval(function () {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerEl.textContent = minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+
+            if (--timeLeft < 0) {
+                clearInterval(interval);
+                interval = null;
+                isExamRunning = false;
+                $('.btn-edit').prop('disabled', false).removeClass('disabled-btn');
+                alert("Time is up! Submitting exam...");
+                $("#quizForm").submit();
+            }
+        }, 1000);
+    }
+
+    var user = null;
+    var studentId = null;
+    function GetAllSubjectForExam() {
+        user = sessionStorage.getItem("username");
+        studentId = sessionStorage.getItem("studentId");
+        console.log("Logged in user:", user);
+
+        $.ajax({
+            url: "@Url.Action("GetAllExamAssignedSubject", "Student")",
+            crossDomain: true,
+            success: function (data) {
+                console.log(data);
+                var resultData = _.map(data.data, function (innerArray) {
+                    var obj = {};
+                    _.each(innerArray, function (item) {
+                        obj[item.Key] = item.Value;
+
+                    });
+                    return obj;
+                });
+
+                resultData.forEach(sub => {
+                    $('#ddlSubject').append(`<option value="${sub.subject_id}">${sub.subject_title}</option>`);
+                });
+
+                console.log(resultData);
+
+
+                //studentTable.clear().rows.add(resultData).draw();
+            }
+        });
+    }
+
+    function saveSubject(dataToSend) {
+        $.ajax({
+    url: "@Url.Action("saveSubject", "Home")",   // Controller action
+    type: 'POST',
+    data: JSON.stringify(dataToSend),
+    contentType: 'application/json; charset=utf-8',
+    success: function (res) {
+        if (res.success) {
+            toastr.success("Subject Added successfully!", "Success");
+            //alert("Questions saved successfully!");
+            GetAllSubject();
+        } else {
+            toastr.error(res.message, "Success");
+        }
+    },
+    error: function (err) {
+        console.error(err);
+        alert("Error while sending data to server.");
+    }
+});
+    }
+
+    function GetAllRequest() {
+        user = sessionStorage.getItem("username");
+        studentId = sessionStorage.getItem("studentId");
+        console.log("Logged in user:", user);
+
+        $.ajax({
+            url: "@Url.Action("GetAllRequest", "Student")?studentid=" + studentId,
+            crossDomain: true,
+            success: function (data) {
+                console.log(data);
+                var resultData = _.map(data.data, function (innerArray) {
+                    var obj = {};
+                    _.each(innerArray, function (item) {
+                        obj[item.Key] = item.Value;
+
+                    });
+                    return obj;
+                });
+
+                
+
+                console.log(resultData);
+
+
+                studentTable.clear().rows.add(resultData).draw();
+            }
+        });
+    }
+
+</script>
+
+
+
